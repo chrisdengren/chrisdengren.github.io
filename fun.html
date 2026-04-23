@@ -167,9 +167,7 @@
     <header>
       <h1>Fun</h1>
       <p class="lede">
-        A corner of the site for physics that doesn't fit on a CV. Everything
-        below is interactive — poke at it. Built in plain JavaScript on
-        HTML canvas, no libraries.
+        Interactive physics stuff...
       </p>
     </header>
 
@@ -181,9 +179,7 @@
       <p class="sub">
         A Gaussian wavepacket moving rightward, evolving under the
         time-dependent Schrödinger equation. Move your mouse to sculpt a
-        potential barrier — mouse <em>x</em> is its position, and <em>y</em>
-        controls its height (up is taller). Watch the wave partly tunnel,
-        partly reflect.
+        potential barrier. Have fun. 
       </p>
       <canvas id="qwave" width="760" height="260"></canvas>
       <div class="controls">
@@ -202,11 +198,8 @@
       <p class="sub">
         Click anywhere on the canvas to emit an electromagnetic pulse — a
         Gaussian-enveloped sinusoid in E<sub>z</sub>. Turn on the double
-        slit and pulse from the left to watch classic diffraction and
-        interference build up on the other side; or switch on the
-        parabolic reflector and click at the marked focus to see your
-        pulse come out collimated after reflection. Solved with 2D
-        finite-difference time-domain on a Yee grid; red is
+        slit or switch on the
+        parabolic reflector. Red is
         E<sub>z</sub> out of the page, blue is into it, gray is a
         perfect conductor.
       </p>
@@ -227,7 +220,7 @@
       <p class="sub">
         Two rigid rods, four state variables, and no closed-form solution.
         Integrated with RK4. Initial angles are slightly randomized each
-        drop — so two "identical" runs diverge, which is the whole point.
+        drop.
       </p>
       <canvas id="pendulum" width="760" height="400"></canvas>
       <div class="controls">
@@ -243,9 +236,7 @@
       <h2>Monte Carlo estimates π</h2>
       <p class="sub">
         Throw darts uniformly at a unit square. The fraction that land inside
-        the quarter circle, times 4, converges to π. Slowly. This is the
-        simplest Monte Carlo estimator I know — and a gentle ancestor of the
-        MC simulations I've run for electron scattering.
+        the quarter circle, times 4, converges to π. A simple Monte Carlo simulation.
       </p>
       <canvas id="mc" width="380" height="380"></canvas>
       <div class="controls">
