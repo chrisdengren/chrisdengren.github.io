@@ -167,9 +167,7 @@
     <header>
       <h1>Fun</h1>
       <p class="lede">
-        A corner of the site for physics that doesn't fit on a CV. Everything
-        below is interactive — poke at it. Built in plain JavaScript on
-        HTML canvas, no libraries.
+        Interactive physics things...
       </p>
     </header>
 
@@ -182,8 +180,7 @@
         A Gaussian wavepacket moving rightward, evolving under the
         time-dependent Schrödinger equation. Move your mouse to sculpt a
         potential barrier — mouse <em>x</em> is its position, and <em>y</em>
-        controls its height (up is taller). Watch the wave partly tunnel,
-        partly reflect.
+        controls its height (up is taller). Play with the wave.
       </p>
       <canvas id="qwave" width="760" height="260"></canvas>
       <div class="controls">
@@ -200,9 +197,8 @@
     <section class="demo">
       <h2>Double pendulum</h2>
       <p class="sub">
-        Two rigid rods, four state variables, and no closed-form solution.
-        Integrated with RK4. Initial angles are slightly randomized each
-        drop — so two "identical" runs diverge, which is the whole point.
+        Two rigid rods, four state variables, and no closed-form solution. Initial angles are slightly randomized each
+        drop.
       </p>
       <canvas id="pendulum" width="760" height="400"></canvas>
       <div class="controls">
@@ -218,9 +214,7 @@
       <h2>Monte Carlo estimates π</h2>
       <p class="sub">
         Throw darts uniformly at a unit square. The fraction that land inside
-        the quarter circle, times 4, converges to π. Slowly. This is the
-        simplest Monte Carlo estimator I know — and a gentle ancestor of the
-        MC simulations I've run for electron scattering.
+        the quarter circle, times 4, converges to π. Slowly. A simple Monte Carlo estimator.
       </p>
       <canvas id="mc" width="380" height="380"></canvas>
       <div class="controls">
