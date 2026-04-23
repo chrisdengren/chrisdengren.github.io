@@ -45,7 +45,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .wrap { max-width: 780px; margin: 0 auto; padding: 72px 28px 120px; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 72px 28px 120px; }
 
     a {
       color: var(--link);
@@ -188,7 +188,9 @@
       <canvas id="qwave" width="760" height="260"></canvas>
       <div class="controls">
         <button id="qwave-reset">↻ New wave</button>
-        <span class="hint">hover the canvas · barrier follows your cursor</span>
+        <button id="qwave-lock">Lock barrier</button>
+        <button id="qwave-bc">Boundary: absorbing</button>
+        <span id="qwave-hint" class="hint">click the canvas to freeze the barrier in place</span>
       </div>
     </section>
 
@@ -256,6 +258,8 @@
     const V    = new Float64Array(N);
 
     let mouseX = N / 2, mouseY = 0.5, mouseOn = false;
+    let locked = false;    // click to freeze the barrier
+    let pbc = false;       // periodic boundary conditions?
 
     function initWave() {
       const x0 = 75, sigma = 14, k0 = 0.65;
@@ -274,30 +278,54 @@
     function updatePotential() {
       const center = mouseX;
       const width = 18;
-      const Vmax = mouseOn ? Math.max(0, (1 - mouseY)) * 0.35 : 0;
+      const show = locked || mouseOn;
+      const Vmax = show ? Math.max(0, (1 - mouseY)) * 0.35 : 0;
       for (let i = 0; i < N; i++) {
-        V[i] = Vmax * Math.exp(-((i - center) * (i - center)) / (2 * width * width));
+        // distance from barrier center, wrapped under PBC so a barrier at
+        // the edge behaves as one barrier, not two half-barriers
+        let d = i - center;
+        if (pbc) {
+          if (d >  N / 2) d -= N;
+          if (d < -N / 2) d += N;
+        }
+        V[i] = Vmax * Math.exp(-(d * d) / (2 * width * width));
       }
     }
 
     function step() {
       updatePotential();
-      // ∂ψ_R/∂t =  H ψ_I
-      for (let i = 1; i < N - 1; i++) {
-        const lap = psiI[i + 1] - 2 * psiI[i] + psiI[i - 1];
-        psiR[i] += dt * (-0.5 * invDx2 * lap + V[i] * psiI[i]);
-      }
-      // ∂ψ_I/∂t = -H ψ_R
-      for (let i = 1; i < N - 1; i++) {
-        const lap = psiR[i + 1] - 2 * psiR[i] + psiR[i - 1];
-        psiI[i] -= dt * (-0.5 * invDx2 * lap + V[i] * psiR[i]);
-      }
-      // Soft absorbing boundary so bounces don't dominate
-      const absorb = 40;
-      for (let i = 0; i < absorb; i++) {
-        const d = 1 - 0.015 * (1 - i / absorb);
-        psiR[i] *= d; psiI[i] *= d;
-        psiR[N - 1 - i] *= d; psiI[N - 1 - i] *= d;
+
+      if (pbc) {
+        // Periodic boundaries — neighbors wrap with modular indexing
+        for (let i = 0; i < N; i++) {
+          const ip = (i + 1) % N;
+          const im = (i - 1 + N) % N;
+          const lap = psiI[ip] - 2 * psiI[i] + psiI[im];
+          psiR[i] += dt * (-0.5 * invDx2 * lap + V[i] * psiI[i]);
+        }
+        for (let i = 0; i < N; i++) {
+          const ip = (i + 1) % N;
+          const im = (i - 1 + N) % N;
+          const lap = psiR[ip] - 2 * psiR[i] + psiR[im];
+          psiI[i] -= dt * (-0.5 * invDx2 * lap + V[i] * psiR[i]);
+        }
+      } else {
+        // Fixed (Dirichlet) endpoints with soft absorbing buffer —
+        // so waves hitting the edge fade rather than bounce back
+        for (let i = 1; i < N - 1; i++) {
+          const lap = psiI[i + 1] - 2 * psiI[i] + psiI[i - 1];
+          psiR[i] += dt * (-0.5 * invDx2 * lap + V[i] * psiI[i]);
+        }
+        for (let i = 1; i < N - 1; i++) {
+          const lap = psiR[i + 1] - 2 * psiR[i] + psiR[i - 1];
+          psiI[i] -= dt * (-0.5 * invDx2 * lap + V[i] * psiR[i]);
+        }
+        const absorb = 40;
+        for (let i = 0; i < absorb; i++) {
+          const d = 1 - 0.015 * (1 - i / absorb);
+          psiR[i] *= d; psiI[i] *= d;
+          psiR[N - 1 - i] *= d; psiI[N - 1 - i] *= d;
+        }
       }
     }
 
@@ -374,6 +402,7 @@
     loop();
 
     function pointerMove(e) {
+      if (locked) return;  // frozen — ignore mouse while locked
       const rect = canvas.getBoundingClientRect();
       const t = (e.touches && e.touches[0]) || e;
       mouseX = ((t.clientX - rect.left) / rect.width) * N;
@@ -382,10 +411,32 @@
     }
     canvas.addEventListener('mousemove', pointerMove);
     canvas.addEventListener('touchmove', (e) => { pointerMove(e); e.preventDefault(); }, { passive: false });
-    canvas.addEventListener('mouseleave', () => { mouseOn = false; });
-    canvas.addEventListener('touchend', () => { mouseOn = false; });
+    canvas.addEventListener('mouseleave', () => { if (!locked) mouseOn = false; });
+    canvas.addEventListener('touchend', () => { if (!locked) mouseOn = false; });
+
+    // Click = toggle lock (works for mouse and touch)
+    const lockBtn = document.getElementById('qwave-lock');
+    const hint    = document.getElementById('qwave-hint');
+    function updateLockUI() {
+      lockBtn.textContent = locked ? 'Release barrier' : 'Lock barrier';
+      hint.textContent = locked
+        ? 'barrier locked — click the canvas or the button to release'
+        : 'click the canvas to freeze the barrier in place';
+      canvas.style.cursor = locked ? 'pointer' : 'crosshair';
+    }
+    function toggleLock() { locked = !locked; updateLockUI(); }
+    canvas.addEventListener('click', toggleLock);
+    lockBtn.addEventListener('click', toggleLock);
+
+    // Boundary condition toggle
+    const bcBtn = document.getElementById('qwave-bc');
+    bcBtn.addEventListener('click', () => {
+      pbc = !pbc;
+      bcBtn.textContent = pbc ? 'Boundary: periodic' : 'Boundary: absorbing';
+    });
 
     document.getElementById('qwave-reset').addEventListener('click', initWave);
+    updateLockUI();
   })();
 
   /* =====================================================
