@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ren (Chris) Deng</title>
+  <meta name="description" content="Personal website of Ren (Chris) Deng — PhD student in Applied Physics at Harvard University." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fdfdfb;
+      --text: #1a1a1a;
+      --muted: #666;
+      --rule: #e5e3dd;
+      --link: #8b2a1f;      /* subtle academic red */
+      --link-hover: #5a1a12;
+      --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --text: #e8e6e1;
+        --muted: #9a9a94;
+        --rule: #2e2e2c;
+        --link: #e8a298;
+        --link-hover: #f5c5bd;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: "kern", "liga";
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 72px 28px 120px;
+    }
+
+    /* Header */
+    header { margin-bottom: 40px; }
+    h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 2.2rem;
+      line-height: 1.15;
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+    }
+    header .affil {
+      color: var(--muted);
+      font-size: 0.98rem;
+      margin: 0 0 4px;
+    }
+    header .contact {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    header .contact a { margin-right: 8px; }
+
+    /* Links */
+    a {
+      color: var(--link);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    a:hover { color: var(--link-hover); border-bottom-color: currentColor; }
+
+    /* Sections */
+    section { margin-top: 44px; }
+    h2 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin: 0 0 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--rule);
+      letter-spacing: 0.01em;
+    }
+
+    p { margin: 0 0 14px; }
+
+    /* News / updates list */
+    .news {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .news li {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 14px;
+      padding: 6px 0;
+      font-size: 0.95rem;
+    }
+    .news .when {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.88rem;
+      padding-top: 2px;
+    }
+
+    /* Publications */
+    .pubs {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: pub;
+    }
+    .pubs li {
+      position: relative;
+      padding: 8px 0 8px 30px;
+      font-size: 0.96rem;
+      border-bottom: 1px dashed var(--rule);
+    }
+    .pubs li:last-child { border-bottom: none; }
+    .pubs li::before {
+      counter-increment: pub;
+      content: "[" counter(pub) "]";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.88rem;
+    }
+    .pubs .authors .me { font-weight: 600; color: var(--text); }
+    .pubs .title { font-style: italic; }
+    .pubs .venue { color: var(--muted); }
+
+    /* Position list (research / teaching) */
+    .posts {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .posts li {
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--rule);
+    }
+    .posts li:last-child { border-bottom: none; }
+    .posts .line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .posts .role { font-weight: 500; }
+    .posts .date {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .posts .meta { color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+
+    /* Small text utility */
+    .small { font-size: 0.88rem; color: var(--muted); }
+
+    footer {
+      margin-top: 72px;
+      padding-top: 18px;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 48px 22px 80px; }
+      h1 { font-size: 1.8rem; }
+      .news li { grid-template-columns: 72px 1fr; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- ============ HEADER ============ -->
+    <header>
+      <h1>Ren (Chris) Deng</h1>
+      <p class="affil">Incoming Ph.D. Student in Applied Physics, Harvard University</p>
+      <p class="contact">
+        <a href="mailto:rd2906@columbia.edu">rd2906@columbia.edu</a> ·
+        <a href="https://linkedin.com/in/chris-deng" target="_blank" rel="noopener">LinkedIn</a> ·
+        <a href="https://github.com/chrisdengren" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="cv.pdf">CV</a>
+      </p>
+    </header>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about">
+      <p>
+        I am an incoming Ph.D. student in Applied Physics at Harvard University,
+        joining the 2026 cohort as an <em>Ashford Fellow</em>. I graduated from
+        Columbia University in 2026 with a B.A. in Physics and Applied Mathematics.
+      </p>
+      <p>
+        My research sits at the intersection of physics, instrumentation, and
+        computation. I've worked on <strong>Monte Carlo simulations</strong> of
+        electron scattering for multicolor electron microscopy in the
+        <a href="#" target="_blank" rel="noopener">Prigozhin Lab</a>,
+        <strong>humidity-driven actuators</strong> for evaporation-based energy
+        harvesting in the <a href="#" target="_blank" rel="noopener">Sahin Lab</a>,
+        and <strong>X-ray spectroscopy</strong> of magnetic white dwarf binaries
+        in the <a href="#" target="_blank" rel="noopener">High-Energy Astrophysics Group</a>
+        at Columbia Astrophysics Lab.
+      </p>
+      <p>
+        Outside of physics, I play badminton and chess, hike, and draw anime
+        characters on <a href="https://www.xiaohongshu.com/" target="_blank" rel="noopener">RedNote/Xiaohongshu</a>.
+      </p>
+    </section>
+
+    <!-- ============ NEWS ============ -->
+    <section id="news">
+      <h2>News</h2>
+      <ul class="news">
+        <li>
+          <span class="when">Sep 2026</span>
+          <span>Starting the Ph.D. at Harvard Applied Physics as an Ashford Fellow.</span>
+        </li>
+        <li>
+          <span class="when">2026</span>
+          <span>Our paper on the intermediate polar ZTF J185139.81+171430.3 is published in <em>The Astrophysical Journal</em>.</span>
+        </li>
+        <li>
+          <span class="when">May 2026</span>
+          <span>Graduated from Columbia with a B.A. in Physics and Applied Mathematics.</span>
+        </li>
+        <li>
+          <span class="when">Dec 2025</span>
+          <span>Gave a senior seminar talk on neural mappings and intrinsic dimensionality of cosmological 2D maps.</span>
+        </li>
+        <li>
+          <span class="when">Oct 2025</span>
+          <span>Presented a poster on cathodoluminescence for multicolor electron microscopy at the Columbia Undergraduate Research Symposium.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ PUBLICATIONS ============ -->
+    <section id="publications">
+      <h2>Publications</h2>
+      <ol class="pubs">
+        <li>
+          <div class="authors"><span class="me">Deng, R.</span>, Mori, K., Miao, E., Bridges, G., Hailey, C. J., Buckley, D., Ramsay, G., &amp; Jarvis, D.</div>
+          <div><span class="title">Broadband X-ray observations of the periodic optical source ZTF J185139.81+171430.3 and its identification as a massive intermediate polar.</span></div>
+          <div class="venue"><em>The Astrophysical Journal</em>, 2026. <a href="https://doi.org/10.3847/1538-4357/ae2ac6" target="_blank" rel="noopener">doi:10.3847/1538-4357/ae2ac6</a></div>
+        </li>
+        <li>
+          <div class="authors">Xiao, X., Vankov, A., <span class="me">Deng, R.</span>, et al.</div>
+          <div><span class="title">A sub-watt scale evaporation energy harvester based on the Hygrostack actuator.</span></div>
+          <div class="venue">Manuscript in preparation.</div>
+        </li>
+        <li>
+          <div class="authors">Abdul Rehman, S., Roy, D., et al. (contributing author: <span class="me">Deng, R.</span>)</div>
+          <div><span class="title">Dyes for multicolor electron microscopy.</span></div>
+          <div class="venue">In preparation.</div>
+        </li>
+        <li>
+          <div class="authors">Bridges, G., Mori, K., et al. (contributing author: <span class="me">Deng, R.</span>)</div>
+          <div><span class="title">X-ray spectroscopic measurements of white dwarf masses of magnetic cataclysmic variables.</span></div>
+          <div class="venue">In preparation.</div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ RESEARCH ============ -->
+    <section id="research">
+      <h2>Research Experience</h2>
+      <ul class="posts">
+        <li>
+          <div class="line">
+            <span class="role">Research Assistant, Prigozhin Lab, Harvard University</span>
+            <span class="date">Mar 2025 – Aug 2025</span>
+          </div>
+          <div class="meta">PI: Maxim Prigozhin · Monte Carlo simulation of electron scattering and cathodoluminescence for multicolor SEM.</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role">Undergraduate Researcher, Sahin Lab, Columbia University</span>
+            <span class="date">May 2024 – Present</span>
+          </div>
+          <div class="meta">PI: Ozgur Sahin · Humidity-driven hygroscopic actuators for evaporation-based power generation.</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role">Undergraduate Researcher, High-Energy Astrophysics Group, Columbia Astrophysics Lab</span>
+            <span class="date">Oct 2023 – Dec 2025</span>
+          </div>
+          <div class="meta">PI: Charles J. Hailey · X-ray spectral and timing analysis of magnetic white dwarf binaries; MCVSPEC model development (C++).</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ TALKS ============ -->
+    <section id="talks">
+      <h2>Selected Talks &amp; Posters</h2>
+      <ul class="posts">
+        <li>
+          <div class="line">
+            <span class="role"><em>Learning neural mappings and intrinsic dimensionality of cosmological 2D maps</em></span>
+            <span class="date">Dec 2025</span>
+          </div>
+          <div class="meta">Applied Mathematics Senior Seminar, Columbia University (talk).</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role"><em>Cathodoluminescence for multicolor electron microscopy</em></span>
+            <span class="date">Oct 2025</span>
+          </div>
+          <div class="meta">Undergraduate Research Symposium, Columbia University (poster).</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role"><em>An X-ray investigation of a new intermediate polar ZTF J1851</em></span>
+            <span class="date">2024</span>
+          </div>
+          <div class="meta">Columbia URS, AstroFest, and X-ray–TeV Undergraduate Research Symposium III at Nevis Labs.</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ TEACHING ============ -->
+    <section id="teaching">
+      <h2>Teaching</h2>
+      <ul class="posts">
+        <li>
+          <div class="line">
+            <span class="role">Teaching Assistant, PHYS 3003 Mechanics</span>
+            <span class="date">Spring 2025</span>
+          </div>
+          <div class="meta">Columbia University, Department of Physics.</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role">Teaching Assistant, MATH 3028 Partial Differential Equations</span>
+            <span class="date">Spring 2024</span>
+          </div>
+          <div class="meta">Columbia University, Department of Mathematics.</div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ SERVICE ============ -->
+    <section id="service">
+      <h2>Service &amp; Activities</h2>
+      <ul class="posts">
+        <li>
+          <div class="line">
+            <span class="role">President, Global China Connection</span>
+            <span class="date">Sep 2023 – Present</span>
+          </div>
+          <div class="meta">Columbia University's largest community of undergraduate Chinese international students.</div>
+        </li>
+        <li>
+          <div class="line">
+            <span class="role">Event Supervisor, Columbia University Science Olympiad</span>
+            <span class="date">Nov 2022 – Jan 2025</span>
+          </div>
+          <div class="meta">Designed and supervised the Experimental Design and Astronomy sections.</div>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>
+        Last updated <span id="updated">April 2026</span>.
+        Built with plain HTML &amp; CSS, hosted on GitHub Pages.
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>
