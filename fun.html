@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fun — Ren (Chris) Deng</title>
+  <meta name="description" content="Interactive physics demos — a playground by Ren (Chris) Deng." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fdfdfb;
+      --text: #1a1a1a;
+      --muted: #666;
+      --rule: #e5e3dd;
+      --link: #8b2a1f;
+      --link-hover: #5a1a12;
+      --accent-blue: #1f3a5f;
+      --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --text: #e8e6e1;
+        --muted: #9a9a94;
+        --rule: #2e2e2c;
+        --link: #e8a298;
+        --link-hover: #f5c5bd;
+        --accent-blue: #8fb3dd;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 780px; margin: 0 auto; padding: 72px 28px 120px; }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    a:hover { color: var(--link-hover); border-bottom-color: currentColor; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 22px;
+      font-size: 0.82rem;
+      text-transform: lowercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 44px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .tabs a { color: var(--muted); border-bottom: none; }
+    .tabs a[aria-current="page"] { color: var(--text); font-weight: 600; }
+    .tabs a:hover { color: var(--text); }
+
+    /* Header */
+    h1 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 2.2rem;
+      line-height: 1.15;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+    }
+    .lede { color: var(--muted); font-size: 1.02rem; margin: 0 0 8px; max-width: 640px; }
+
+    /* Demo sections */
+    .demo { margin-top: 56px; }
+    .demo h2 {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.35rem;
+      margin: 0 0 6px;
+      letter-spacing: 0.005em;
+    }
+    .demo .sub {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0 0 18px;
+      max-width: 640px;
+    }
+    .demo canvas {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    .controls {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+    }
+    .controls button {
+      font: 500 0.85rem var(--sans);
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--rule);
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .controls button:hover {
+      border-color: var(--link);
+      color: var(--link);
+    }
+    .info {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .hint {
+      font-style: italic;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer {
+      margin-top: 80px;
+      padding-top: 18px;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 48px 22px 80px; }
+      h1 { font-size: 1.75rem; }
+      .demo h2 { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <nav class="tabs">
+      <a href="index.html">About</a>
+      <a href="fun.html" aria-current="page">Fun</a>
+    </nav>
+
+    <header>
+      <h1>Fun</h1>
+      <p class="lede">
+        A corner of the site for physics that doesn't fit on a CV. Everything
+        below is interactive — poke at it. Built in plain JavaScript on
+        HTML canvas, no libraries.
+      </p>
+    </header>
+
+    <!-- ========================================================== -->
+    <!--  DEMO 1 — QUANTUM WAVEPACKET + MOUSE-CONTROLLED POTENTIAL  -->
+    <!-- ========================================================== -->
+    <section class="demo">
+      <h2>A quantum wavepacket under your cursor</h2>
+      <p class="sub">
+        A Gaussian wavepacket moving rightward, evolving under the
+        time-dependent Schrödinger equation. Move your mouse to sculpt a
+        potential barrier — mouse <em>x</em> is its position, and <em>y</em>
+        controls its height (up is taller). Watch the wave partly tunnel,
+        partly reflect.
+      </p>
+      <canvas id="qwave" width="760" height="260"></canvas>
+      <div class="controls">
+        <button id="qwave-reset">↻ New wave</button>
+        <span class="hint">hover the canvas · barrier follows your cursor</span>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!--  DEMO 2 — DOUBLE PENDULUM                                  -->
+    <!-- ========================================================== -->
+    <section class="demo">
+      <h2>Double pendulum</h2>
+      <p class="sub">
+        Two rigid rods, four state variables, and no closed-form solution.
+        Integrated with RK4. Initial angles are slightly randomized each
+        drop — so two "identical" runs diverge, which is the whole point.
+      </p>
+      <canvas id="pendulum" width="760" height="400"></canvas>
+      <div class="controls">
+        <button id="pendulum-reset">↻ Drop again</button>
+        <span class="hint">each drop finds a different future</span>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!--  DEMO 3 — MONTE CARLO π                                    -->
+    <!-- ========================================================== -->
+    <section class="demo">
+      <h2>Monte Carlo estimates π</h2>
+      <p class="sub">
+        Throw darts uniformly at a unit square. The fraction that land inside
+        the quarter circle, times 4, converges to π. Slowly. This is the
+        simplest Monte Carlo estimator I know — and a gentle ancestor of the
+        MC simulations I've run for electron scattering.
+      </p>
+      <canvas id="mc" width="380" height="380"></canvas>
+      <div class="controls">
+        <span id="mc-info" class="info">n = 0 · π ≈ —</span>
+        <button id="mc-reset">↻ Reset</button>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        ← <a href="index.html">back to home</a>.
+        Source is readable in view-source if you're curious.
+      </p>
+    </footer>
+  </div>
+
+  <!-- ============================================================ -->
+  <!--  SCRIPTS                                                     -->
+  <!-- ============================================================ -->
+  <script>
+  /* =====================================================
+     DEMO 1 — Quantum wavepacket with mouse-controlled potential.
+     Solves i ∂ψ/∂t = (-½ ∂²/∂x² + V) ψ  via Visscher leapfrog.
+     ===================================================== */
+  (function () {
+    const canvas = document.getElementById('qwave');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const N = 500;
+    const dt = 0.28;           // time step
+    const invDx2 = 1;          // dx = 1 natural units
+    const psiR = new Float64Array(N);
+    const psiI = new Float64Array(N);
+    const V    = new Float64Array(N);
+
+    let mouseX = N / 2, mouseY = 0.5, mouseOn = false;
+
+    function initWave() {
+      const x0 = 75, sigma = 14, k0 = 0.65;
+      let norm = 0;
+      for (let i = 0; i < N; i++) {
+        const env = Math.exp(-((i - x0) * (i - x0)) / (2 * sigma * sigma));
+        psiR[i] = env * Math.cos(k0 * i);
+        psiI[i] = env * Math.sin(k0 * i);
+        norm += psiR[i] * psiR[i] + psiI[i] * psiI[i];
+      }
+      norm = Math.sqrt(norm);
+      for (let i = 0; i < N; i++) { psiR[i] /= norm; psiI[i] /= norm; }
+    }
+    initWave();
+
+    function updatePotential() {
+      const center = mouseX;
+      const width = 18;
+      const Vmax = mouseOn ? Math.max(0, (1 - mouseY)) * 0.35 : 0;
+      for (let i = 0; i < N; i++) {
+        V[i] = Vmax * Math.exp(-((i - center) * (i - center)) / (2 * width * width));
+      }
+    }
+
+    function step() {
+      updatePotential();
+      // ∂ψ_R/∂t =  H ψ_I
+      for (let i = 1; i < N - 1; i++) {
+        const lap = psiI[i + 1] - 2 * psiI[i] + psiI[i - 1];
+        psiR[i] += dt * (-0.5 * invDx2 * lap + V[i] * psiI[i]);
+      }
+      // ∂ψ_I/∂t = -H ψ_R
+      for (let i = 1; i < N - 1; i++) {
+        const lap = psiR[i + 1] - 2 * psiR[i] + psiR[i - 1];
+        psiI[i] -= dt * (-0.5 * invDx2 * lap + V[i] * psiR[i]);
+      }
+      // Soft absorbing boundary so bounces don't dominate
+      const absorb = 40;
+      for (let i = 0; i < absorb; i++) {
+        const d = 1 - 0.015 * (1 - i / absorb);
+        psiR[i] *= d; psiI[i] *= d;
+        psiR[N - 1 - i] *= d; psiI[N - 1 - i] *= d;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const baseline = H * 0.55;
+      const amp = 380;
+
+      // Potential fill (from bottom)
+      ctx.fillStyle = 'rgba(139, 42, 31, 0.18)';
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (let i = 0; i < N; i++) {
+        const x = (i / (N - 1)) * W;
+        const y = H - V[i] * 550;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // Potential outline
+      ctx.strokeStyle = 'rgba(139, 42, 31, 0.65)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const x = (i / (N - 1)) * W;
+        const y = H - V[i] * 550;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // |ψ|² envelope (symmetric about baseline)
+      ctx.fillStyle = 'rgba(31, 58, 95, 0.14)';
+      ctx.beginPath();
+      ctx.moveTo(0, baseline);
+      for (let i = 0; i < N; i++) {
+        const x = (i / (N - 1)) * W;
+        const m = Math.sqrt(psiR[i] * psiR[i] + psiI[i] * psiI[i]);
+        ctx.lineTo(x, baseline - m * amp);
+      }
+      for (let i = N - 1; i >= 0; i--) {
+        const x = (i / (N - 1)) * W;
+        const m = Math.sqrt(psiR[i] * psiR[i] + psiI[i] * psiI[i]);
+        ctx.lineTo(x, baseline + m * amp);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Re(ψ) line — the actual oscillation
+      ctx.strokeStyle = '#1f3a5f';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const x = (i / (N - 1)) * W;
+        const y = baseline - psiR[i] * amp;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Baseline
+      ctx.strokeStyle = 'rgba(102, 102, 102, 0.25)';
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(0, baseline); ctx.lineTo(W, baseline);
+      ctx.stroke();
+    }
+
+    function loop() {
+      for (let s = 0; s < 10; s++) step();
+      draw();
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    function pointerMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      const t = (e.touches && e.touches[0]) || e;
+      mouseX = ((t.clientX - rect.left) / rect.width) * N;
+      mouseY = (t.clientY - rect.top) / rect.height;
+      mouseOn = true;
+    }
+    canvas.addEventListener('mousemove', pointerMove);
+    canvas.addEventListener('touchmove', (e) => { pointerMove(e); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('mouseleave', () => { mouseOn = false; });
+    canvas.addEventListener('touchend', () => { mouseOn = false; });
+
+    document.getElementById('qwave-reset').addEventListener('click', initWave);
+  })();
+
+  /* =====================================================
+     DEMO 2 — Double pendulum, RK4
+     ===================================================== */
+  (function () {
+    const canvas = document.getElementById('pendulum');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const L1 = 1, L2 = 1, m1 = 1, m2 = 1, g = 9.81;
+    const pivot = { x: W / 2, y: H * 0.25 };
+    const scale = Math.min(W, H) * 0.28;
+    const dt = 0.012;
+
+    let s = [0, 0, 0, 0]; // [θ1, θ2, ω1, ω2]
+    let trail = [];
+    const maxTrail = 500;
+
+    function reset() {
+      s = [
+        1.8 + (Math.random() - 0.5) * 0.3,
+        2.0 + (Math.random() - 0.5) * 0.3,
+        0,
+        0,
+      ];
+      trail = [];
+    }
+    reset();
+
+    function derivs(st) {
+      const [t1, t2, o1, o2] = st;
+      const d = t1 - t2;
+      const den = 2 * m1 + m2 - m2 * Math.cos(2 * d);
+      const a1n =
+        -g * (2 * m1 + m2) * Math.sin(t1)
+        - m2 * g * Math.sin(t1 - 2 * t2)
+        - 2 * Math.sin(d) * m2 * (o2 * o2 * L2 + o1 * o1 * L1 * Math.cos(d));
+      const a2n =
+        2 * Math.sin(d) *
+        (o1 * o1 * L1 * (m1 + m2) + g * (m1 + m2) * Math.cos(t1) + o2 * o2 * L2 * m2 * Math.cos(d));
+      return [o1, o2, a1n / (L1 * den), a2n / (L2 * den)];
+    }
+
+    function rk4() {
+      const k1 = derivs(s);
+      const k2 = derivs(s.map((v, i) => v + (dt / 2) * k1[i]));
+      const k3 = derivs(s.map((v, i) => v + (dt / 2) * k2[i]));
+      const k4 = derivs(s.map((v, i) => v + dt * k3[i]));
+      s = s.map((v, i) => v + (dt / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      const p1 = { x: pivot.x + scale * Math.sin(s[0]), y: pivot.y + scale * Math.cos(s[0]) };
+      const p2 = { x: p1.x + scale * Math.sin(s[1]), y: p1.y + scale * Math.cos(s[1]) };
+
+      trail.push({ x: p2.x, y: p2.y });
+      if (trail.length > maxTrail) trail.shift();
+
+      // Trail (gradient effect via segmented alpha)
+      for (let i = 1; i < trail.length; i += 2) {
+        const a = (i / trail.length) * 0.7;
+        ctx.strokeStyle = `rgba(139, 42, 31, ${a})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+        ctx.lineTo(trail[i].x, trail[i].y);
+        ctx.stroke();
+      }
+
+      // Rods
+      ctx.strokeStyle = 'rgba(26, 26, 26, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pivot.x, pivot.y);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Pivot (small)
+      ctx.fillStyle = 'rgba(102, 102, 102, 0.6)';
+      ctx.beginPath(); ctx.arc(pivot.x, pivot.y, 3, 0, 2 * Math.PI); ctx.fill();
+      // Bob 1
+      ctx.fillStyle = '#1a1a1a';
+      ctx.beginPath(); ctx.arc(p1.x, p1.y, 6, 0, 2 * Math.PI); ctx.fill();
+      // Bob 2
+      ctx.fillStyle = '#8b2a1f';
+      ctx.beginPath(); ctx.arc(p2.x, p2.y, 7, 0, 2 * Math.PI); ctx.fill();
+    }
+
+    function loop() {
+      for (let k = 0; k < 4; k++) rk4();
+      draw();
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    document.getElementById('pendulum-reset').addEventListener('click', reset);
+  })();
+
+  /* =====================================================
+     DEMO 3 — Monte Carlo π
+     ===================================================== */
+  (function () {
+    const canvas = document.getElementById('mc');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const info = document.getElementById('mc-info');
+
+    let inside = 0, total = 0;
+
+    function drawFrame() {
+      ctx.clearRect(0, 0, W, H);
+      // Square frame
+      ctx.strokeStyle = 'rgba(102, 102, 102, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
+      // Quarter circle (anchored bottom-left) — radius = W assuming square canvas
+      ctx.strokeStyle = 'rgba(31, 58, 95, 0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, H, W, -Math.PI / 2, 0);
+      ctx.stroke();
+    }
+
+    function reset() {
+      inside = 0; total = 0;
+      drawFrame();
+      info.textContent = 'n = 0 · π ≈ —';
+    }
+    reset();
+
+    function step() {
+      if (total >= 60000) return;
+      const batch = 35;
+      for (let i = 0; i < batch; i++) {
+        const x = Math.random();
+        const y = Math.random();
+        const inCircle = x * x + y * y < 1;
+        if (inCircle) inside++;
+        total++;
+        ctx.fillStyle = inCircle ? 'rgba(31, 58, 95, 0.45)' : 'rgba(139, 42, 31, 0.45)';
+        ctx.fillRect(x * W, (1 - y) * H, 1.6, 1.6);
+      }
+      const piEst = (4 * inside) / total;
+      info.textContent = `n = ${total.toLocaleString()} · π ≈ ${piEst.toFixed(5)}`;
+    }
+
+    function loop() { step(); requestAnimationFrame(loop); }
+    loop();
+
+    document.getElementById('mc-reset').addEventListener('click', reset);
+  })();
+  </script>
+</body>
+</html>
