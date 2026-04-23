@@ -167,7 +167,9 @@
     <header>
       <h1>Fun</h1>
       <p class="lede">
-        Interactive physics things...
+        A corner of the site for physics that doesn't fit on a CV. Everything
+        below is interactive — poke at it. Built in plain JavaScript on
+        HTML canvas, no libraries.
       </p>
     </header>
 
@@ -180,7 +182,8 @@
         A Gaussian wavepacket moving rightward, evolving under the
         time-dependent Schrödinger equation. Move your mouse to sculpt a
         potential barrier — mouse <em>x</em> is its position, and <em>y</em>
-        controls its height (up is taller). Play with the wave.
+        controls its height (up is taller). Watch the wave partly tunnel,
+        partly reflect.
       </p>
       <canvas id="qwave" width="760" height="260"></canvas>
       <div class="controls">
@@ -192,13 +195,39 @@
     </section>
 
     <!-- ========================================================== -->
-    <!--  DEMO 2 — DOUBLE PENDULUM                                  -->
+    <!--  DEMO — FDTD ELECTROMAGNETIC WAVES                         -->
+    <!-- ========================================================== -->
+    <section class="demo">
+      <h2>Maxwell on a grid</h2>
+      <p class="sub">
+        Click anywhere on the canvas to emit an electromagnetic pulse — a
+        Gaussian-enveloped sinusoid in E<sub>z</sub>. Turn on the double
+        slit and pulse from the left to watch classic diffraction and
+        interference build up on the other side; or switch on the
+        parabolic reflector and click at the marked focus to see your
+        pulse come out collimated after reflection. Solved with 2D
+        finite-difference time-domain on a Yee grid; red is
+        E<sub>z</sub> out of the page, blue is into it, gray is a
+        perfect conductor.
+      </p>
+      <canvas id="emwave" width="220" height="130" style="image-rendering: pixelated; image-rendering: crisp-edges;"></canvas>
+      <div class="controls">
+        <button id="em-clear">↻ Clear field</button>
+        <button id="em-slits">Add double slit</button>
+        <button id="em-reflector">Add reflector</button>
+        <span class="hint">click anywhere to emit a pulse</span>
+      </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!--  DEMO — DOUBLE PENDULUM                                    -->
     <!-- ========================================================== -->
     <section class="demo">
       <h2>Double pendulum</h2>
       <p class="sub">
-        Two rigid rods, four state variables, and no closed-form solution. Initial angles are slightly randomized each
-        drop.
+        Two rigid rods, four state variables, and no closed-form solution.
+        Integrated with RK4. Initial angles are slightly randomized each
+        drop — so two "identical" runs diverge, which is the whole point.
       </p>
       <canvas id="pendulum" width="760" height="400"></canvas>
       <div class="controls">
@@ -214,7 +243,9 @@
       <h2>Monte Carlo estimates π</h2>
       <p class="sub">
         Throw darts uniformly at a unit square. The fraction that land inside
-        the quarter circle, times 4, converges to π. Slowly. A simple Monte Carlo estimator.
+        the quarter circle, times 4, converges to π. Slowly. This is the
+        simplest Monte Carlo estimator I know — and a gentle ancestor of the
+        MC simulations I've run for electron scattering.
       </p>
       <canvas id="mc" width="380" height="380"></canvas>
       <div class="controls">
@@ -434,7 +465,195 @@
   })();
 
   /* =====================================================
-     DEMO 2 — Double pendulum, RK4
+     DEMO — FDTD electromagnetic waves (TM_z, 2D Yee grid).
+     H fields updated from curl E; then E updated from curl H.
+     Natural units with c·dt/dx = 0.5 (< 1/√2, so stable).
+     ===================================================== */
+  (function () {
+    const canvas = document.getElementById('emwave');
+    const ctx = canvas.getContext('2d');
+    const Nx = canvas.width, Ny = canvas.height;
+    const N = Nx * Ny;
+
+    const Ez = new Float32Array(N);
+    const Hx = new Float32Array(N);
+    const Hy = new Float32Array(N);
+    const wall = new Uint8Array(N);     // 1 = perfect electric conductor
+
+    const S = 0.5;                       // Courant coefficient
+    let pulseT = -1, pulseX = 0, pulseY = 0;
+    let slits = false;
+    let reflector = false;
+    const FOCUS_X = 60, FOCUS_Y = Math.floor(Ny / 2);
+
+    // Background color (detect dark mode to blend nicely)
+    const dark = window.matchMedia &&
+                 window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const bgR = dark ? 26 : 253, bgG = dark ? 26 : 253, bgB = dark ? 26 : 251;
+    const wallShade = dark ? 190 : 95;
+
+    function applyWalls() {
+      wall.fill(0);
+      if (slits) {
+        const xw = Math.floor(Nx * 0.5);
+        for (let j = 0; j < Ny; j++) wall[j * Nx + xw] = 1;
+        const s1 = Math.floor(Ny * 0.36), s2 = Math.floor(Ny * 0.64);
+        const sw = 3;
+        for (let j = s1 - sw; j <= s1 + sw; j++) wall[j * Nx + xw] = 0;
+        for (let j = s2 - sw; j <= s2 + sw; j++) wall[j * Nx + xw] = 0;
+      }
+      if (reflector) {
+        // Parabola: (y - FOCUS_Y)² = 4f (x - vx), focus at (vx + f, FOCUS_Y).
+        const vx = 25;
+        const f = FOCUS_X - vx;  // focal length
+        for (let dy = -45; dy <= 45; dy++) {
+          const y = FOCUS_Y + dy;
+          if (y < 1 || y > Ny - 2) continue;
+          const xExact = vx + (dy * dy) / (4 * f);
+          const x = Math.round(xExact);
+          if (x < 1 || x > Nx - 2) continue;
+          wall[y * Nx + x] = 1;
+          if (x + 1 < Nx - 1) wall[y * Nx + x + 1] = 1;  // thicken
+        }
+      }
+    }
+
+    function step() {
+      // Hx -= S * (Ez[i,j+1] - Ez[i,j])
+      for (let j = 0; j < Ny - 1; j++) {
+        const b = j * Nx;
+        for (let i = 0; i < Nx; i++) {
+          const k = b + i;
+          Hx[k] -= S * (Ez[k + Nx] - Ez[k]);
+        }
+      }
+      // Hy += S * (Ez[i+1,j] - Ez[i,j])
+      for (let j = 0; j < Ny; j++) {
+        const b = j * Nx;
+        for (let i = 0; i < Nx - 1; i++) {
+          const k = b + i;
+          Hy[k] += S * (Ez[k + 1] - Ez[k]);
+        }
+      }
+      // Ez += S * ((Hy[i,j] - Hy[i-1,j]) - (Hx[i,j] - Hx[i,j-1]))
+      for (let j = 1; j < Ny - 1; j++) {
+        const b = j * Nx;
+        for (let i = 1; i < Nx - 1; i++) {
+          const k = b + i;
+          if (wall[k]) { Ez[k] = 0; continue; }
+          Ez[k] += S * ((Hy[k] - Hy[k - 1]) - (Hx[k] - Hx[k - Nx]));
+        }
+      }
+
+      // Soft absorbing buffer at the borders
+      const aw = 12;
+      for (let m = 0; m < aw; m++) {
+        const d = 1 - 0.05 * (1 - m / aw);
+        for (let j = 0; j < Ny; j++) {
+          Ez[j * Nx + m] *= d;
+          Ez[j * Nx + (Nx - 1 - m)] *= d;
+          Hy[j * Nx + m] *= d;
+          Hy[j * Nx + (Nx - 1 - m)] *= d;
+        }
+        for (let i = 0; i < Nx; i++) {
+          Ez[m * Nx + i] *= d;
+          Ez[(Ny - 1 - m) * Nx + i] *= d;
+          Hx[m * Nx + i] *= d;
+          Hx[(Ny - 1 - m) * Nx + i] *= d;
+        }
+      }
+
+      // Active pulse source (Gaussian-enveloped sinusoid)
+      if (pulseT >= 0 && pulseT < 40) {
+        const env = Math.exp(-((pulseT - 14) * (pulseT - 14)) / 60);
+        const val = env * Math.sin(0.35 * pulseT) * 4;
+        const ix = Math.max(1, Math.min(Nx - 2, Math.round(pulseX)));
+        const iy = Math.max(1, Math.min(Ny - 2, Math.round(pulseY)));
+        Ez[iy * Nx + ix] += val;
+        pulseT++;
+      } else if (pulseT >= 40) {
+        pulseT = -1;
+      }
+    }
+
+    const imgData = ctx.createImageData(Nx, Ny);
+    const data = imgData.data;
+
+    function render() {
+      for (let j = 0; j < Ny; j++) {
+        const b = j * Nx;
+        for (let i = 0; i < Nx; i++) {
+          const k = b + i;
+          const p = k * 4;
+          if (wall[k]) {
+            data[p] = wallShade; data[p + 1] = wallShade; data[p + 2] = wallShade; data[p + 3] = 255;
+            continue;
+          }
+          const v = Ez[k];
+          const m = Math.tanh(Math.abs(v) * 2.5);
+          const R = v > 0 ? 139 : 31;
+          const G = v > 0 ? 42  : 58;
+          const B = v > 0 ? 31  : 95;
+          data[p]     = bgR + (R - bgR) * m;
+          data[p + 1] = bgG + (G - bgG) * m;
+          data[p + 2] = bgB + (B - bgB) * m;
+          data[p + 3] = 255;
+        }
+      }
+      // Focus marker (subtle gray cross) for the parabolic reflector
+      if (reflector) {
+        const cs = dark ? 220 : 140;
+        const pts = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (const [dx, dy] of pts) {
+          const x = FOCUS_X + dx, y = FOCUS_Y + dy;
+          if (x >= 0 && x < Nx && y >= 0 && y < Ny) {
+            const p = (y * Nx + x) * 4;
+            data[p] = cs; data[p + 1] = cs; data[p + 2] = cs;
+          }
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function loop() {
+      step();
+      render();
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      pulseX = ((e.clientX - rect.left) / rect.width) * Nx;
+      pulseY = ((e.clientY - rect.top) / rect.height) * Ny;
+      pulseT = 0;
+    });
+
+    document.getElementById('em-clear').addEventListener('click', () => {
+      Ez.fill(0); Hx.fill(0); Hy.fill(0); pulseT = -1;
+    });
+    const slitsBtn = document.getElementById('em-slits');
+    const reflectorBtn = document.getElementById('em-reflector');
+    function updateButtons() {
+      slitsBtn.textContent     = slits     ? 'Remove slits'     : 'Add double slit';
+      reflectorBtn.textContent = reflector ? 'Remove reflector' : 'Add reflector';
+    }
+    slitsBtn.addEventListener('click', () => {
+      slits = !slits;
+      if (slits) reflector = false;  // mutually exclusive presets
+      applyWalls();
+      updateButtons();
+    });
+    reflectorBtn.addEventListener('click', () => {
+      reflector = !reflector;
+      if (reflector) slits = false;
+      applyWalls();
+      updateButtons();
+    });
+  })();
+
+  /* =====================================================
+     DEMO — Double pendulum, RK4
      ===================================================== */
   (function () {
     const canvas = document.getElementById('pendulum');
