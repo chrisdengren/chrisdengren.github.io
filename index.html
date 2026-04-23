@@ -187,11 +187,29 @@
       h1 { font-size: 1.8rem; }
       .news li { grid-template-columns: 72px 1fr; gap: 10px; }
     }
+      /* Top tabs */
+  .tabs {
+  display: flex;
+  gap: 22px;
+  font-size: 0.82rem;
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 44px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+  }
+  .tabs a { color: var(--muted); border-bottom: none; }
+  .tabs a[aria-current="page"] { color: var(--text); font-weight: 600; }
+  .tabs a:hover { color: var(--text); border-bottom-color: transparent; }
   </style>
 </head>
 <body>
   <div class="wrap">
-
+  <!-- ============ TABS ============ -->
+  <nav class="tabs">
+  <a href="index.html" aria-current="page">About</a>
+  <a href="fun.html">Fun</a>
+  </nav>
     <!-- ============ HEADER ============ -->
     <header>
       <h1>Ren Deng 邓仁</h1>
